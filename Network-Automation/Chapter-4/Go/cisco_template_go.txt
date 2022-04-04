@@ -1,0 +1,22 @@
+hostname {{.Name}} 
+! 
+interface Loopback10 
+ description Router loopback 
+ ip address 10.10.{{.Id}}.1 255.255.255.255 
+ ! 
+interface GigabitEthernet0/0 
+ description WAN to {{.Toname}} sw1 G0/1 
+! 
+interface GigabitEthernet0/0.1{{.Id}}1 
+ description {{.Toname}} 
+ encapsulation dot1Q 1{{.Id}}1 
+ ip address 10.{{.Id}}.1.2 255.255.255.252 
+ ip ospf network point-to-point 
+ ip ospf hello-interval 1 
+ ip ospf cost 10 
+! 
+router ospf 10 
+ router-id 10.10.{{.Id}}.1 
+ auto-cost reference-bandwidth 10000 
+ network 10.0.0.0 0.255.255.255 area 0 
+!

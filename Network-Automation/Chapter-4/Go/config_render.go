@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"text/template"
 
@@ -15,36 +13,41 @@ type Inventory struct {
 	Count    uint
 }
 
+type Router struct {
+	Id     int    `yaml:"id"`
+	Name   string `yaml:"name"`
+	Toname string `yaml:"to_name"`
+}
+
+type RouterList []Router
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
 func main() {
-	yfile, err := ioutil.ReadFile("items.yaml")
+	var routers RouterList
 
-	if err != nil {
+	yamlFile, err := ioutil.ReadFile("router_definitions.yaml")
+	check(err)
 
-		log.Fatal(err)
-	}
+	err = yaml.Unmarshal(yamlFile, &routers)
+	check(err)
 
-	data := make(map[interface{}]interface{})
+	templateFile, err := ioutil.ReadFile("cisco_template_go.txt")
+	check(err)
 
-	err2 := yaml.Unmarshal(yfile, &data)
+	for _, router := range routers {
 
-	if err2 != nil {
+		outFile, err := os.Create(router.Name + "_router_config.txt")
+		check(err)
 
-		log.Fatal(err2)
-	}
+		tmpl, err := template.New("render").Parse(string(templateFile))
+		check(err)
 
-	for k, v := range data {
-
-		fmt.Printf("%s -> %d\n", k, v)
-	}
-
-	sweat := Inventory{"wool", 17}
-
-	tmpl, err := template.New("test").Parse("{{.Count}} items are made of {{.Material}}")
-	if err != nil {
-		panic(err)
-	}
-	err = tmpl.Execute(os.Stdout, sweat)
-	if err != nil {
-		panic(err)
+		err = tmpl.Execute(outFile, router)
+		check(err)
 	}
 }

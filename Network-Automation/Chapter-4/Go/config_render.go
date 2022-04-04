@@ -8,11 +8,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Inventory struct {
-	Material string
-	Count    uint
-}
-
 type Router struct {
 	Id     int    `yaml:"id"`
 	Name   string `yaml:"name"`
